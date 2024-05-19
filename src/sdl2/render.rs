@@ -50,6 +50,7 @@ use std::mem::{transmute, MaybeUninit};
 use std::ops::Deref;
 use std::ptr;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::sys;
 use crate::sys::SDL_BlendMode;
@@ -208,7 +209,7 @@ impl RendererInfo {
 /// When the `RendererContext` is dropped, it destroys the `SDL_Renderer`
 pub struct RendererContext<T> {
     raw: *mut sys::SDL_Renderer,
-    _target: Rc<T>,
+    _target: Arc<T>,
 }
 
 impl<T> Drop for RendererContext<T> {
@@ -247,7 +248,7 @@ impl<T> RendererContext<T> {
         self.raw
     }
 
-    pub unsafe fn from_ll(raw: *mut sys::SDL_Renderer, target: Rc<T>) -> Self {
+    pub unsafe fn from_ll(raw: *mut sys::SDL_Renderer, target: Arc<T>) -> Self {
         RendererContext {
             raw,
             _target: target,

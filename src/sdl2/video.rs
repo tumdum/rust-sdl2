@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::error::Error;
 use std::ffi::{CStr, CString, NulError};
 use std::ops::{Deref, DerefMut};
-use std::rc::Rc;
+use std::sync::Arc;
 use std::{fmt, mem, ptr};
 
 use crate::common::{validate_int, IntegerOrSdlError};
@@ -550,6 +550,9 @@ pub struct WindowContext {
     pub(crate) metal_view: sys::SDL_MetalView,
 }
 
+unsafe impl Send for WindowContext {}
+unsafe impl Sync for WindowContext {}
+
 impl Drop for WindowContext {
     #[inline]
     #[doc(alias = "SDL_DestroyWindow")]
@@ -690,13 +693,13 @@ impl FlashOperation {
 /// This may happen when a `TextureCreator<Window>` outlives the `Canvas<Window>`
 #[derive(Clone)]
 pub struct Window {
-    context: Rc<WindowContext>,
+    context: Arc<WindowContext>,
 }
 
 impl From<WindowContext> for Window {
     fn from(context: WindowContext) -> Window {
         Window {
-            context: Rc::new(context),
+            context: Arc::new(context),
         }
     }
 }
@@ -1325,7 +1328,7 @@ impl Window {
 
     #[inline]
     /// Create a new `Window` without taking ownership of the `WindowContext`
-    pub const fn from_ref(context: Rc<WindowContext>) -> Window {
+    pub const fn from_ref(context: Arc<WindowContext>) -> Window {
         Window { context }
     }
 
@@ -1339,7 +1342,7 @@ impl Window {
         self.into()
     }
 
-    pub fn context(&self) -> Rc<WindowContext> {
+    pub fn context(&self) -> Arc<WindowContext> {
         self.context.clone()
     }
 

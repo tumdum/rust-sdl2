@@ -4,7 +4,7 @@ extern crate sdl2;
 extern crate wgpu;
 
 use std::borrow::Cow;
-use wgpu::SurfaceError;
+use wgpu::{PipelineCompilationOptions, SurfaceError};
 
 use sdl2::event::{Event, WindowEvent};
 use sdl2::keyboard::Keycode;
@@ -30,7 +30,7 @@ fn main() -> Result<(), String> {
         ..Default::default()
     });
     let surface = unsafe {
-        match instance.create_surface_unsafe(wgpu::SurfaceTargetUnsafe::from_window(&window).unwrap()) {
+        match instance.create_surface(&window) {
             Ok(s) => s,
             Err(e) => return Err(e.to_string()),
         }
@@ -83,6 +83,7 @@ fn main() -> Result<(), String> {
             buffers: &[],
             module: &shader,
             entry_point: "vs_main",
+            compilation_options: PipelineCompilationOptions::default(),
         },
         fragment: Some(wgpu::FragmentState {
             targets: &[Some(wgpu::ColorTargetState {
@@ -92,6 +93,7 @@ fn main() -> Result<(), String> {
             })],
             module: &shader,
             entry_point: "fs_main",
+            compilation_options: PipelineCompilationOptions::default(),
         }),
         primitive: wgpu::PrimitiveState {
             topology: wgpu::PrimitiveTopology::TriangleList,
@@ -202,6 +204,8 @@ fn main() -> Result<(), String> {
         queue.submit([encoder.finish()]);
         frame.present();
     }
+
+    drop(surface);
 
     Ok(())
 }
